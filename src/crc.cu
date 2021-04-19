@@ -24,9 +24,10 @@ int iterative(int max, int len, uint32_t goal){
     return 0;
 }
 
+//__global__ void bruteforceCRC32(uint64_t *result,int len, uint64_t max,uint32_t *hashes, int lenHashes, uint8_t *hashSet1, uint32_t *hashSet2){
 __global__ void bruteforceCRC32(uint64_t *result,int len, uint64_t max,uint32_t goal, uint8_t *hashSet1, uint32_t *hashSet2){
-    uint64_t index = threadIdx.x;
-    uint64_t stride = blockDim.x;
+    uint64_t index = blockIdx.x*blockDim.x +threadIdx.x;
+    uint64_t stride = blockDim.x * gridDim.x;
 
     for(uint64_t i=index;i<max;i+=stride){
         uint32_t hash=0xffffffff;
@@ -35,6 +36,7 @@ __global__ void bruteforceCRC32(uint64_t *result,int len, uint64_t max,uint32_t 
             //Kirill from the future: nope, see index 64-65
             hash = hashSet2[(hash&0xff)^hashSet1[0x41+( (i&(31<<(5*j))) >>(5*j) )]]^((hash) >>8);
         }
+        //TODO: iterate lol
         hash = ~hash;
         if(*result != 0)
             break; // FIXME: this is stupid since it requires a memory read

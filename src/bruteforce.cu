@@ -15,8 +15,11 @@ int main(){
     cudaMemcpy(dh1, hashSet1, 256, cudaMemcpyHostToDevice);
     cudaMemcpy(dh2, hashSet2, 4*256, cudaMemcpyHostToDevice);
 
-    uint32_t goal = 0x49541d5a;
-    int maxLen = 6;
+    //Just random hashes, run the program to figure out what they are lol
+    uint32_t hashes[] = {0x49541d5a, 0x5ad7f6bc, 0x937db7ec, 0xa988cb16, 0xdf4ac7b9};
+    uint32_t goal = 0xdf4ac7b9;
+
+    int maxLen = 7;
 	for(int len=1;len<=maxLen;len++){
         //Checking 32 chars => max = 32^maxLen
 		uint64_t max=32;
@@ -25,12 +28,13 @@ int main(){
 
 		uint64_t *d_result;
 		cudaMalloc(&d_result,sizeof(uint64_t));
-		bruteforceCRC32<<<1,1024>>>(d_result,len,max,goal,dh1,dh2);
+		//bruteforceCRC32<<<1,1024>>>(d_result,len,max,hashes,sizeof(hashes)/4,dh1,dh2);
+
+		bruteforceCRC32<<<1000,1024>>>(d_result,len,max,goal,dh1,dh2);
 		cudaDeviceSynchronize();
 
 		uint64_t result = 0;
 		cudaMemcpy(&result, d_result, sizeof(uint64_t), cudaMemcpyDeviceToHost);
-
 
 		if(result!=0){
 			char decoded[len];
